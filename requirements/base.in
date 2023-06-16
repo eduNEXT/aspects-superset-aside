@@ -3,3 +3,9 @@
 
 Django             # Web application framework
 
+edx_django_utils
+django-statici18n
+edx-i18n-tools
+Mako
+XBlock
+xblock-utils
