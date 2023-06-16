@@ -20,7 +20,10 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 summary_fragment = """
 <div>&nbsp;</div>
 <div id="superser-aside">
-    <span>Total xAPI events: {{ total_events }}</span>
+    <div>Total xAPI events: {{ total_events }}</div>
+    <div>metrics : {{ metrics }}</div>
+    <div>raw records : {{ raw_records.0 }}</div>
+
 </div>
 """
 
@@ -129,10 +132,6 @@ class AspectsSupersetAside(XBlockAside):
             },
         ).json()
 
-        for result in another_response["result"]:
-            for data in result["data"]:
-                print(data)
-
         fragment.add_content(
             _render_summary(
                 {
@@ -141,6 +140,8 @@ class AspectsSupersetAside(XBlockAside):
                     "block_type": block.scope_ids.usage_id.block_type,
                     "course_id": block.scope_ids.usage_id.course_key,
                     "total_events": total_events,
+                    "raw_records": another_response["result"][0]["data"],
+                    "metrics": another_response["result"][1]["data"],
                 }
             )
         )
