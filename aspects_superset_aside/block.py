@@ -64,8 +64,74 @@ class AspectsSupersetAside(XBlockAside):
             password=superset_password,
         )
 
+        # You can get data using a defined chart id
         response = client.session.get(url=superset_host + 'api/v1/chart/6/data', data={"force": "True"}).json()
         total_events = response["result"][0]["data"][0]["count"]
+
+        query_raw_events = [
+            {
+                "time_range": "No filter",
+                "granularity": "emission_time",
+                "filters": [],
+                "extras": {
+                    "time_grain_sqla": "P1D",
+                    "having": "",
+                    "having_druid": [],
+                    "where": "(object_id like '%video%')",
+                },
+                "applied_time_extras": {},
+                "columns": ["verb_id", "course_id", "object_id", "actor_id", "event_id"],
+                "orderby": [],
+                "annotation_layers": [],
+                "row_limit": 10000,
+                "timeseries_limit": 0,
+                "order_desc": True,
+                "url_params": {},
+                "custom_params": {},
+                "custom_form_data": {},
+                "post_processing": [],
+            }
+        ]
+
+        query_metrics = [
+            {
+                "time_range": "No filter",
+                "granularity": "emission_time",
+                "filters": [],
+                "extras": {
+                    "time_grain_sqla": "P1D",
+                    "having": "",
+                    "having_druid": [],
+                    "where": ""
+                },
+                "applied_time_extras": {},
+                "columns": [],
+                "metrics": ["count"],
+                "annotation_layers": [],
+                "timeseries_limit": 0,
+                "order_desc": True,
+                "url_params": {},
+                "custom_params": {},
+                "custom_form_data": {}
+            }
+        ]
+        # Or you can send multiple queries at once for the same datasource (dataset)
+        another_response = client.session.post(
+            url=superset_host + 'api/v1/chart/data',
+            json={
+                # The datasource object can point to a table, just provide the ID.
+                # Not sure what others are possible
+                "datasource": {"id": 2, "type": "table"},
+                "force": False, # this force the query to be executed even if cached
+                "queries": query_raw_events + query_metrics,
+                "result_format": "json",
+                "result_type": "full",
+            },
+        ).json()
+
+        for result in another_response["result"]:
+            for data in result["data"]:
+                print(data)
 
         fragment.add_content(
             _render_summary(
