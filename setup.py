@@ -129,4 +129,15 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
     ],
+    entry_points={
+        "lms.djangoapp": [
+            "aspects_superset_aside = aspects_superset_aside.apps:AspectsSupersetAsideConfig",
+        ],
+        "xblock_asides.v1": [
+            "aspects_superset_aside = aspects_superset_aside.block:AspectsSupersetAside",
+        ],
+        "xblock.v1": [
+            "superset = aspects_superset_aside.block:AspectsSupersetXblock",
+        ]
+    },
 )
