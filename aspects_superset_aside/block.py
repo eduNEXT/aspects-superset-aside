@@ -1,6 +1,6 @@
 # pyright: reportMissingImports=false
 
-"""Xblock aside enabling OpenAI driven summaries"""
+"""Xblock aside enabling OpenAI driven summaries."""
 
 import logging
 
@@ -10,7 +10,6 @@ from django.utils import translation
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock, XBlockAside
 from xblock.fields import Scope, String
-from xblock.fragment import Fragment
 from xblockutils.resources import ResourceLoader
 
 summary_fragment = """
@@ -30,17 +29,14 @@ def _render_summary(context):
 
 class AspectsSupersetAside(XBlockAside):
     """
-    XBlock aside that injects AI summary javascript
+    XBlock aside that injects a superset dashboard for instructors.
     """
 
     def _get_block(self):
         """
-        Gets the block wrapped by this aside.
+        Get the block wrapped by this aside.
         """
-
-        from xmodule.modulestore.django import (
-            modulestore,
-        )  # pylint: disable=import-error, import-outside-toplevel
+        from xmodule.modulestore.django import modulestore  # pylint: disable=import-error, import-outside-toplevel
 
         return modulestore().get_item(self.scope_ids.usage_id.usage_key)
 
@@ -49,7 +45,7 @@ class AspectsSupersetAside(XBlockAside):
         self, block, context=None
     ):  # pylint: disable=unused-argument
         """
-        Renders the aside contents for the student view
+        Render the aside contents for the student view.
         """
         fragment = Fragment("")
 
@@ -66,13 +62,18 @@ class AspectsSupersetAside(XBlockAside):
     @classmethod
     def should_apply_to_block(cls, block):
         """
-        Overrides base XBlockAside implementation. Indicates whether this aside should
-        apply to a given block type, course, and user.
+        Override base XBlockAside implementation.
+
+        Indicates whether this aside should apply to a given block type, course, and user.
         """
         return True
 
 
 class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
+    """
+    XBlock that injects a superset dashboard for instructors.
+    """
+
     display_name = String(
         display_name="Display Name", default="Superset", scope=Scope.settings
     )
@@ -82,7 +83,6 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
-    # TO-DO: change this view to display your data your own way.
     def student_view(self, context=None):
         """
         Render the primary view of the SupersetXBlock, shown to students when viewing courses.
@@ -129,7 +129,7 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
     @XBlock.json_handler
     def studio_submit(self, data, suffix=""):  # pylint: disable=unused-argument
         """
-        Called when submitting the form in Studio.
+        Call when submitting the form in Studio.
         """
         self.display_name = data.get("display_name")
 

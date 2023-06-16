@@ -18,9 +18,6 @@ class AspectsSupersetAsideConfig(AppConfig):
                 "common": {
                     PluginSettings.RELATIVE_PATH: "settings.common",
                 },
-                "devstack": {
-                    PluginSettings.RELATIVE_PATH: "settings.devstack",
-                },
                 "production": {
                     PluginSettings.RELATIVE_PATH: "settings.production",
                 },
