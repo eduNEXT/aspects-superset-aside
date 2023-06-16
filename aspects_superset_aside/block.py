@@ -12,10 +12,15 @@ from xblock.core import XBlock, XBlockAside
 from xblock.fields import Scope, String
 from xblockutils.resources import ResourceLoader
 
+from supersetapiclient.client import SupersetClient
+import os
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 summary_fragment = """
 <div>&nbsp;</div>
 <div id="superser-aside">
-    <h1>{{ superset_host }}</h1>
+    <span>Total xAPI events: {{ total_events }}</span>
 </div>
 """
 
@@ -49,10 +54,27 @@ class AspectsSupersetAside(XBlockAside):
         """
         fragment = Fragment("")
 
+        superset_host = "http://superset:8088/"
+        superset_username = "EaFN5GkRE7Kh"
+        superset_password = "OtI2H42YRyAp5drmbxrtywfH"
+
+        client = SupersetClient(
+            host=superset_host,
+            username=superset_username,
+            password=superset_password,
+        )
+
+        response = client.session.get(url=superset_host + 'api/v1/chart/6/data', data={"force": "True"}).json()
+        total_events = response["result"][0]["data"][0]["count"]
+
         fragment.add_content(
             _render_summary(
                 {
-                    "superset_host": "superset:8088",
+                    "superset_host": superset_host,
+                    "block_id": block.scope_ids.usage_id.block_id,
+                    "block_type": block.scope_ids.usage_id.block_type,
+                    "course_id": block.scope_ids.usage_id.course_key,
+                    "total_events": total_events,
                 }
             )
         )
