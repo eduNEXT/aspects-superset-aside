@@ -2,14 +2,16 @@
 
 """Xblock aside enabling OpenAI driven summaries"""
 
-from datetime import datetime
-
-from django.conf import settings
-from django.template import Context, Template
-from web_fragments.fragment import Fragment
-from xblock.core import XBlockAside, XBlock
-
 import logging
+
+import pkg_resources
+from django.template import Context, Template
+from django.utils import translation
+from web_fragments.fragment import Fragment
+from xblock.core import XBlock, XBlockAside
+from xblock.fields import Scope, String
+from xblock.fragment import Fragment
+from xblockutils.resources import ResourceLoader
 
 summary_fragment = """
 <div>&nbsp;</div>
@@ -20,10 +22,10 @@ summary_fragment = """
 
 logger = logging.getLogger(__name__)
 
+
 def _render_summary(context):
     template = Template(summary_fragment)
     return template.render(Context(context))
-
 
 
 class AspectsSupersetAside(XBlockAside):
@@ -36,25 +38,28 @@ class AspectsSupersetAside(XBlockAside):
         Gets the block wrapped by this aside.
         """
 
-        from xmodule.modulestore.django import modulestore  # pylint: disable=import-error, import-outside-toplevel
+        from xmodule.modulestore.django import (
+            modulestore,
+        )  # pylint: disable=import-error, import-outside-toplevel
+
         return modulestore().get_item(self.scope_ids.usage_id.usage_key)
 
-    @XBlockAside.aside_for('student_view')
-    def student_view_aside(self, block, context=None):  # pylint: disable=unused-argument
+    @XBlockAside.aside_for("student_view")
+    def student_view_aside(
+        self, block, context=None
+    ):  # pylint: disable=unused-argument
         """
         Renders the aside contents for the student view
         """
-        print("\n\n I'M HERE \n\n")
-        fragment = Fragment('')
+        fragment = Fragment("")
 
         fragment.add_content(
             _render_summary(
                 {
-                    'superset_host': "superset:8088",
+                    "superset_host": "superset:8088",
                 }
             )
         )
-
 
         return fragment
 
@@ -64,25 +69,12 @@ class AspectsSupersetAside(XBlockAside):
         Overrides base XBlockAside implementation. Indicates whether this aside should
         apply to a given block type, course, and user.
         """
-        logger.info("\n\n\nAspectsSupersetAside.should_apply_to_block: %s", block, "\n\n\n")
         return True
 
 
-
-import pkg_resources
-from django.utils import translation
-from xblock.core import XBlock
-from xblock.fields import Scope, String
-from xblock.fragment import Fragment
-from xblockutils.resources import ResourceLoader
-
-
 class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
-
     display_name = String(
-        display_name="Display Name",
-        default="Superset",
-        scope=Scope.settings
+        display_name="Display Name", default="Superset", scope=Scope.settings
     )
 
     def resource_string(self, path):
@@ -105,13 +97,15 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
         # Add i18n js
         statici18n_js_url = self._get_statici18n_js_url()
         if statici18n_js_url:
-            frag.add_javascript_url(self.runtime.local_resource_url(self, statici18n_js_url))
+            frag.add_javascript_url(
+                self.runtime.local_resource_url(self, statici18n_js_url)
+            )
 
         frag.add_javascript(self.resource_string("static/js/src/superset_xblock.js"))
         frag.initialize_js("SupersetXBlock")
         return frag
 
-    #def studio_view(self, _context=None):
+    # def studio_view(self, _context=None):
     #    """
     #    The studio view of the LimeSurveyXBlock, shown to instructors.
     #    """
@@ -123,7 +117,7 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
     #    )
     #    frag.add_css(self.resource_string("static/css/limesurvey.css"))#
 
-        # Add i18n js
+    # Add i18n js
     #    statici18n_js_url = self._get_statici18n_js_url()
     #    if statici18n_js_url:
     #        frag.add_javascript_url(self.runtime.local_resource_url(self, statici18n_js_url))
@@ -149,16 +143,20 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
     def workbench_scenarios():
         """Return a canned scenario for display in the workbench."""
         return [
-            ("LimeSurveyXBlock",
-             """<limesurvey/>
-             """),
-            ("Multiple LimeSurveyXBlock",
-             """<vertical_demo>
+            (
+                "LimeSurveyXBlock",
+                """<limesurvey/>
+             """,
+            ),
+            (
+                "Multiple LimeSurveyXBlock",
+                """<vertical_demo>
                 <limesurvey/>
                 <limesurvey/>
                 <limesurvey/>
                 </vertical_demo>
-             """),
+             """,
+            ),
         ]
 
     @staticmethod
@@ -171,12 +169,13 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
         locale_code = translation.get_language()
         if locale_code is None:
             return None
-        text_js = 'public/js/translations/{locale_code}/text.js'
-        lang_code = locale_code.split('-')[0]
-        for code in (locale_code, lang_code, 'en'):
+        text_js = "public/js/translations/{locale_code}/text.js"
+        lang_code = locale_code.split("-")[0]
+        for code in (locale_code, lang_code, "en"):
             loader = ResourceLoader(__name__)
             if pkg_resources.resource_exists(
-                    loader.module_name, text_js.format(locale_code=code)):
+                loader.module_name, text_js.format(locale_code=code)
+            ):
                 return text_js.format(locale_code=code)
         return None
 
@@ -185,4 +184,4 @@ class AspectsSupersetXblock(XBlock, AspectsSupersetAside):
         """
         Return dummy method to generate initial i18n.
         """
-        return translation.gettext_noop('Dummy')
+        return translation.gettext_noop("Dummy")
